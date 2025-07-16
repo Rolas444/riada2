@@ -15,6 +15,9 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler 
 	// Ruta para la documentación de Swagger
 	app.Get("/swagger/*", swagger.New())
 
+	// Ruta de bienvenida
+	app.Get("/", handlers.Welcome)
+
 	// Rutas públicas
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
