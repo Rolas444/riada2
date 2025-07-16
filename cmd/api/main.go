@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/riada2/config"
+	_ "github.com/riada2/docs" // Importa los documentos de Swagger generados
 	"github.com/riada2/internal/core/domain"
 	"github.com/riada2/internal/core/ports"
 	"github.com/riada2/internal/handlers"
