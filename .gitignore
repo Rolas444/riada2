@@ -1,0 +1,39 @@
+# Archivos de configuración de IDE y editores
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos generados por el sistema operativo
+.DS_Store
+Thumbs.db
+
+# Binarios compilados
+# Es una buena práctica ignorar los ejecutables generados por 'go build'.
+# El nombre puede variar dependiendo de tu proyecto y sistema operativo.
+riada2
+riada2.exe
+*.exe
+*.out
+
+# Archivos de entorno
+# Estos archivos suelen contener secretos y claves de API.
+# En su lugar, se debe incluir en el repositorio un archivo de ejemplo (p.ej., .env.example).
+.env
+.env.*
+!/.env.example
+
+# Archivos de registro (logs)
+*.log
+
+# Documentación generada por Swag
+# El directorio `docs/` contiene archivos generados por `swaggo/swag`.
+# Estos archivos se pueden regenerar en cualquier momento ejecutando `swag init`,
+# por lo que no es necesario versionarlos.
+/docs/
+
+# Resultados de pruebas y perfiles
+# Archivos generados al ejecutar tests o profiling.
+coverage.*
+profile.out
+
