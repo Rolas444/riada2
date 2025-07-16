@@ -83,7 +83,9 @@ func main() {
 		// En un entorno de producción, deberías restringir esto a tu dominio de frontend.
 		// Ejemplo: AllowOrigins: "http://localhost:5173, http://mi-frontend.com",
 		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		// AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowHeaders: "*",
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
 	}))
 	app.Use(logger.New())
 
