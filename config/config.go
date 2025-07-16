@@ -19,9 +19,11 @@ type Config struct {
 
 // LoadConfig loads configuration from .env file
 func LoadConfig(path string) (*Config, error) {
-	if err := godotenv.Load(path); err != nil {
-		return nil, fmt.Errorf("error loading .env file: %w", err)
-	}
+	// if err := godotenv.Load(path); err != nil {
+	// 	return nil, fmt.Errorf("error loading .env file: %w", err)
+	// }
+
+	_ = godotenv.Load(path)
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"),
