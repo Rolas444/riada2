@@ -30,7 +30,7 @@ riada2.exe
 # El directorio `docs/` contiene archivos generados por `swaggo/swag`.
 # Estos archivos se pueden regenerar en cualquier momento ejecutando `swag init`,
 # por lo que no es necesario versionarlos.
-/docs/
+# /docs/
 
 # Resultados de pruebas y perfiles
 # Archivos generados al ejecutar tests o profiling.

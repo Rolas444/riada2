@@ -1,0 +1,381 @@
+basePath: /api/v1
+definitions:
+  domain.DocType:
+    enum:
+    - DNI
+    - CE
+    - passport
+    type: string
+    x-enum-varnames:
+    - DNI
+    - CE
+    - Passport
+  domain.Sex:
+    enum:
+    - F
+    - M
+    type: string
+    x-enum-varnames:
+    - Female
+    - Male
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      recaptchaToken:
+        example: 03AGdBq27...
+        type: string
+      username:
+        example: testuser
+        type: string
+    type: object
+  handlers.LoginResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  handlers.PersonRequest:
+    properties:
+      birthday:
+        type: string
+      docNumber:
+        type: string
+      lastName:
+        type: string
+      middleName:
+        type: string
+      name:
+        type: string
+      sex:
+        allOf:
+        - $ref: '#/definitions/domain.Sex'
+        enum:
+        - F
+        - M
+      typeDoc:
+        allOf:
+        - $ref: '#/definitions/domain.DocType'
+        enum:
+        - DNI
+        - CE
+        - passport
+    required:
+    - birthday
+    - lastName
+    - middleName
+    - name
+    - sex
+    type: object
+  handlers.PersonResponse:
+    properties:
+      birthday:
+        type: string
+      docNumber:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      middleName:
+        type: string
+      name:
+        type: string
+      sex:
+        $ref: '#/definitions/domain.Sex'
+      typeDoc:
+        $ref: '#/definitions/domain.DocType'
+    type: object
+  handlers.ProfileResponse:
+    properties:
+      message:
+        example: Welcome!
+        type: string
+      role:
+        example: user
+        type: string
+      userID:
+        example: 1
+        type: integer
+    type: object
+  handlers.RegisterRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: newuser
+        type: string
+    type: object
+  handlers.RegisterResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        example: 1
+        type: integer
+      role:
+        example: user
+        type: string
+      username:
+        example: newuser
+        type: string
+    type: object
+host: localhost:3001
+info:
+  contact:
+    email: support@example.com
+    name: Soporte de API
+    url: http://www.example.com/support
+  description: Esta es la API para el proyecto Riada2, con autenticación y gestión
+    de usuarios.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Riada2 API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Inicia sesión con nombre de usuario y contraseña, y devuelve un
+        token JWT. Requiere verificación con reCAPTCHA v3.
+      parameters:
+      - description: Credenciales de inicio de sesión y token reCAPTCHA
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LoginResponse'
+        "400":
+          description: No se puede procesar el JSON o falta el token reCAPTCHA
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Credenciales inválidas o fallo en la verificación de reCAPTCHA
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Error interno del servidor
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Iniciar sesión de un usuario
+      tags:
+      - Auth
+  /protected/person:
+    post:
+      consumes:
+      - application/json
+      description: Create a new person record, not necessarily linked to a user.
+      parameters:
+      - description: Person information
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PersonRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.PersonResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new person record (Admin)
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      description: Create or update person information for the authenticated user.
+      parameters:
+      - description: Person information
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PersonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PersonResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create or update own person information
+      tags:
+      - Person
+  /protected/person/{id}:
+    delete:
+      description: Delete person information by ID (admin only)
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete person information
+      tags:
+      - Admin
+  /protected/person/search:
+    get:
+      description: Search for persons by a single search term. The search is performed
+        on the full name and document number.
+      parameters:
+      - description: Search term
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.PersonResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Search persons
+      tags:
+      - Person
+  /protected/profile:
+    get:
+      description: Obtiene la información del perfil del usuario autenticado actualmente.
+        Requiere token JWT.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ProfileResponse'
+        "401":
+          description: No autorizado
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Obtener perfil de usuario
+      tags:
+      - User
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva cuenta de usuario con el nombre de usuario y contraseña
+        proporcionados.
+      parameters:
+      - description: Información de registro del usuario
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.RegisterResponse'
+        "400":
+          description: No se puede procesar el JSON
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "409":
+          description: El nombre de usuario ya existe
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Registrar un nuevo usuario
+      tags:
+      - Auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
