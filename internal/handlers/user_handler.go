@@ -29,9 +29,9 @@ type RegisterResponse struct {
 }
 
 // LoginResponse define la estructura de la respuesta para un login exitoso.
-type LoginResponse struct {
-	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
-}
+// type LoginResponse struct {
+// 	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+// }
 
 // ProfileResponse define la estructura de la respuesta para el perfil de usuario.
 type ProfileResponse struct {

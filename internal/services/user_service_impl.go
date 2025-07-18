@@ -48,14 +48,14 @@ func (s *userServiceImpl) Register(username, password string) (*domain.User, err
 	return user, nil
 }
 
-func (s *userServiceImpl) Login(username, password string) (string, error) {
+func (s *userServiceImpl) Login(username, password string) (string, *domain.Role, error) {
 	user, err := s.userRepo.FindByUsername(username)
 	if err != nil {
-		return "", errors.New("invalid credentials")
+		return "", nil, errors.New("invalid credentials")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return "", errors.New("invalid credentials")
+		return "", nil, errors.New("invalid credentials")
 	}
 
 	// Crear token JWT
@@ -66,5 +66,9 @@ func (s *userServiceImpl) Login(username, password string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(s.jwtSecret))
+	tokenString, err := token.SignedString([]byte(s.jwtSecret))
+	if err != nil {
+		return "", nil, err
+	}
+	return tokenString, &user.Role, nil
 }

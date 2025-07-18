@@ -127,6 +127,15 @@ definitions:
         example: newuser
         type: string
     type: object
+  handlers.WelcomeResponse:
+    properties:
+      docs:
+        example: /swagger/index.html
+        type: string
+      message:
+        example: Welcome to the Riada2 API!
+        type: string
+    type: object
 host: localhost:3001
 info:
   contact:
@@ -142,6 +151,19 @@ info:
   title: Riada2 API
   version: "1.0"
 paths:
+  /:
+    get:
+      description: Obtiene un mensaje de bienvenida de la API con un enlace a la documentación.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.WelcomeResponse'
+      summary: Muestra un mensaje de bienvenida
+      tags:
+      - General
   /login:
     post:
       consumes:

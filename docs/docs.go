@@ -24,6 +24,26 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/": {
+            "get": {
+                "description": "Obtiene un mensaje de bienvenida de la API con un enlace a la documentación.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "General"
+                ],
+                "summary": "Muestra un mensaje de bienvenida",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.WelcomeResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Inicia sesión con nombre de usuario y contraseña, y devuelve un token JWT. Requiere verificación con reCAPTCHA v3.",
@@ -566,6 +586,19 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "newuser"
+                }
+            }
+        },
+        "handlers.WelcomeResponse": {
+            "type": "object",
+            "properties": {
+                "docs": {
+                    "type": "string",
+                    "example": "/swagger/index.html"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Welcome to the Riada2 API!"
                 }
             }
         }

@@ -68,10 +68,16 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// Autenticar usuario usando el servicio
-	token, err := h.userService.Login(req.Username, req.Password)
+	token, role, err := h.userService.Login(req.Username, req.Password)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Error: "Credenciales inválidas"})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(LoginResponse{Token: token})
+	return c.Status(fiber.StatusOK).JSON(LoginResponse{
+		Token: token,
+		User: LoginResponseUser{
+			Email: req.Username,
+			Role:  role,
+		},
+	})
 }
