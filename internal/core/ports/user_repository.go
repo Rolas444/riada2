@@ -6,4 +6,6 @@ import "github.com/riada2/internal/core/domain"
 type UserRepository interface {
 	Save(user *domain.User) error
 	FindByUsername(username string) (*domain.User, error)
+	FindByID(id uint) (*domain.User, error)
+	FindAll() ([]domain.User, error)
 }

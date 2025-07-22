@@ -24,8 +24,8 @@ const (
 // Person representa la información personal de un usuario.
 type Person struct {
 	ID         uint      `gorm:"primaryKey"`
-	UserID     *uint     `gorm:"index"`             // Clave foránea del usuario que realizó la última modificación.
-	User       *User     `gorm:"foreignKey:UserID"` // Relación con el usuario de la última modificación.
+	UserID     *uint     `gorm:"index"` // Clave foránea del usuario que realizó la última modificación.
+	User       *User     // GORM usará UserID como clave foránea por convención.
 	Name       string    `gorm:"not null"`
 	MiddleName string    `gorm:"not null"`
 	LastName   string    `gorm:"not null"`

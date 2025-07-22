@@ -37,6 +37,7 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler 
 		return c.JSON(fiber.Map{"message": "Welcome Admin!"})
 	})
 	adminOnly.Post("/register", userHandler.Register)
+	adminOnly.Get("/users", userHandler.GetAllUsers)
 
 	// --- Rutas para Person (unificadas) ---
 	personRoutes := protected.Group("/person")

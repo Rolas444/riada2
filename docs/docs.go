@@ -96,6 +96,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/protected/admin/register": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new user account. This endpoint is for administrators only.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Register a new user (Admin)",
+                "parameters": [
+                    {
+                        "description": "User registration information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": { "description": "Created", "schema": { "$ref": "#/definitions/handlers.RegisterResponse" } },
+                    "400": { "description": "Cannot parse JSON", "schema": { "$ref": "#/definitions/handlers.ErrorResponse" } },
+                    "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/handlers.ErrorResponse" } },
+                    "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/handlers.ErrorResponse" } },
+                    "409": { "description": "Username already exists", "schema": { "$ref": "#/definitions/handlers.ErrorResponse" } },
+                    "500": { "description": "Could not register user", "schema": { "$ref": "#/definitions/handlers.ErrorResponse" } }
+                }
+            }
+        },
         "/protected/person": {
             "put": {
                 "security": [
@@ -210,6 +249,43 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/protected/admin/users": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a list of all registered users. Admin only.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.UserResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": { "$ref": "#/definitions/handlers.ErrorResponse" }
+                    },
+                    "403": {
+                        "description": "Forbidden", "schema": { "$ref": "#/definitions/handlers.ErrorResponse" }
+                    },
+                    "500": { "description": "Internal Server Error", "schema": { "$ref": "#/definitions/handlers.ErrorResponse" }
                     }
                 }
             }
@@ -403,6 +479,29 @@ const docTemplate = `{
     },
     "definitions": {
         "domain.DocType": {
+            "type": "string",
+            "enum": [
+                "DNI",
+                "CE",
+                "passport"
+            ],
+            "x-enum-varnames": [
+                "DNI",
+                "CE",
+                "Passport"
+            ]
+        },
+        "domain.UserResponse": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "integer" },
+                "username": { "type": "string" },
+                "role": { "type": "string" },
+                "createdAt": { "type": "string" },
+                "updatedAt": { "type": "string" }
+            }
+        },
+        "domain.Role": {
             "type": "string",
             "enum": [
                 "DNI",

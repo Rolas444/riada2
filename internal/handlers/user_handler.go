@@ -98,3 +98,23 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 	}
 	return c.JSON(response)
 }
+
+// GetAllUsers godoc
+// @Summary      Get all users
+// @Description  Get a list of all registered users. Admin only.
+// @Tags         Admin
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Success      200  {array}   domain.UserResponse
+// @Failure      401  {object}  ErrorResponse "Unauthorized"
+// @Failure      403  {object}  ErrorResponse "Forbidden"
+// @Failure      500  {object}  ErrorResponse "Internal Server Error"
+// @Router       /protected/admin/users [get]
+func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
+	users, err := h.userService.GetAllUsers()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: "Could not retrieve users"})
+	}
+
+	return c.JSON(users)
+}

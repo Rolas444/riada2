@@ -54,7 +54,9 @@ func main() {
 	}
 
 	// Conectar a la base de datos
-	db, err := gorm.Open(postgres.Open(cfg.DBSource), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(cfg.DBSource), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		log.Fatalf("could not connect to db: %v", err)
 	}
@@ -63,6 +65,15 @@ func main() {
 	err = db.AutoMigrate(&domain.User{}, &domain.Person{})
 	if err != nil {
 		log.Fatalf("could not migrate db: %v", err)
+	}
+
+	// Crear manualmente las restricciones de clave foránea para evitar dependencias circulares
+	// durante la migración inicial.
+	if !db.Migrator().HasConstraint(&domain.User{}, "Person") {
+		db.Migrator().CreateConstraint(&domain.User{}, "Person")
+	}
+	if !db.Migrator().HasConstraint(&domain.Person{}, "User") {
+		db.Migrator().CreateConstraint(&domain.Person{}, "User")
 	}
 
 	// Inyección de dependencias (unión de piezas)

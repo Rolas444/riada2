@@ -24,6 +24,17 @@ func NewUserService(repo ports.UserRepository, jwtSecret string) ports.UserServi
 	}
 }
 
+// toUserResponse convierte un domain.User a un domain.UserResponse para no exponer la contraseña.
+func toUserResponse(user *domain.User) domain.UserResponse {
+	return domain.UserResponse{
+		ID:        user.ID,
+		Username:  user.Username,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}
+
 func (s *userServiceImpl) Register(username, password string) (*domain.User, error) {
 	// Verificar si el usuario ya existe
 	if _, err := s.userRepo.FindByUsername(username); !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -71,4 +82,43 @@ func (s *userServiceImpl) Login(username, password string) (string, *domain.Role
 		return "", nil, err
 	}
 	return tokenString, &user.Role, nil
+}
+
+func (s *userServiceImpl) GetAllUsers() ([]domain.UserResponse, error) {
+	users, err := s.userRepo.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var userResponses []domain.UserResponse
+	for _, user := range users {
+		userResponses = append(userResponses, toUserResponse(&user))
+	}
+
+	return userResponses, nil
+}
+
+func (s *userServiceImpl) UpdateUser(id uint, username *string, role *domain.Role) (*domain.UserResponse, error) {
+	user, err := s.userRepo.FindByID(id)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	if username != nil && *username != "" {
+		if existingUser, err := s.userRepo.FindByUsername(*username); err == nil && existingUser.ID != id {
+			return nil, errors.New("username already taken")
+		}
+		user.Username = *username
+	}
+
+	if role != nil {
+		user.Role = *role
+	}
+
+	if err := s.userRepo.Save(user); err != nil {
+		return nil, err
+	}
+
+	response := toUserResponse(user)
+	return &response, nil
 }
