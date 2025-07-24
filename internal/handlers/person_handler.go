@@ -1,11 +1,10 @@
 package handlers
 
 import (
+	"errors"
 	"strconv"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/riada2/internal/core/domain"
 	"github.com/riada2/internal/core/ports"
 )
 
@@ -17,35 +16,14 @@ func NewPersonHandler(personService ports.PersonService) *PersonHandler {
 	return &PersonHandler{personService: personService}
 }
 
-type PersonRequest struct {
-	Name       string          `json:"name" validate:"required"`
-	MiddleName string          `json:"middleName" validate:"required"`
-	LastName   string          `json:"lastName" validate:"required"`
-	Sex        domain.Sex      `json:"sex" validate:"required,oneof=F M"`
-	Birthday   time.Time       `json:"birthday" validate:"required"`
-	DocNumber  *string         `json:"docNumber"`
-	TypeDoc    *domain.DocType `json:"typeDoc" validate:"omitempty,oneof=DNI CE passport"`
-}
-
-type PersonResponse struct {
-	ID         uint            `json:"id"`
-	Name       string          `json:"name"`
-	MiddleName string          `json:"middleName"`
-	LastName   string          `json:"lastName"`
-	Sex        domain.Sex      `json:"sex"`
-	Birthday   time.Time       `json:"birthday"`
-	DocNumber  *string         `json:"docNumber,omitempty"`
-	TypeDoc    *domain.DocType `json:"typeDoc,omitempty"`
-}
-
 // CreateOrUpdatePersonForUser godoc
 // @Summary Create or update own person information
 // @Description Create or update person information for the authenticated user.
 // @Tags Person
 // @Accept json
 // @Produce json
-// @Param person body PersonRequest true "Person information"
-// @Success 200 {object} PersonResponse
+// @Param person body handlers.PersonRequest true "Person information"
+// @Success 200 {object} handlers.PersonResponse
 // @Failure 400 {object} ErrorResponse "Bad Request"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Failure 500 {object} ErrorResponse "Internal Server Error"
@@ -57,29 +35,26 @@ func (h *PersonHandler) CreateOrUpdatePersonForUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: err.Error()})
 	}
 
+	person, err := req.ToDomain()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "invalid birthday format, use YYYY-MM-DD"})
+	}
+
 	userID, ok := c.Locals("userID").(float64)
 	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: "user ID not found in context"})
+		// This should ideally not happen if the auth middleware is working correctly.
+		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Error: "user ID not found in context"})
 	}
 
 	userIDUint := uint(userID)
-	person := domain.Person{
-		UserID:     &userIDUint,
-		Name:       req.Name,
-		MiddleName: req.MiddleName,
-		LastName:   req.LastName,
-		Sex:        req.Sex,
-		Birthday:   req.Birthday,
-		DocNumber:  req.DocNumber,
-		TypeDoc:    req.TypeDoc,
-	}
+	person.UserID = &userIDUint
 
-	updatedPerson, err := h.personService.CreateOrUpdatePersonForUser(&person)
+	updatedPerson, err := h.personService.CreateOrUpdatePersonForUser(person)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(h.mapPersonToResponse(updatedPerson))
+	return c.Status(fiber.StatusOK).JSON(NewPersonResponse(updatedPerson))
 }
 
 // CreatePersonByAdmin godoc
@@ -88,8 +63,8 @@ func (h *PersonHandler) CreateOrUpdatePersonForUser(c *fiber.Ctx) error {
 // @Tags Admin
 // @Accept json
 // @Produce json
-// @Param person body PersonRequest true "Person information"
-// @Success 201 {object} PersonResponse
+// @Param person body handlers.PersonRequest true "Person information"
+// @Success 201 {object} handlers.PersonResponse
 // @Failure 400 {object} ErrorResponse "Bad Request"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Failure 403 {object} ErrorResponse "Forbidden"
@@ -102,22 +77,18 @@ func (h *PersonHandler) CreatePersonByAdmin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "cannot parse JSON"})
 	}
 
-	person := &domain.Person{
-		Name:       req.Name,
-		MiddleName: req.MiddleName,
-		LastName:   req.LastName,
-		Sex:        req.Sex,
-		Birthday:   req.Birthday,
-		DocNumber:  req.DocNumber,
-		TypeDoc:    req.TypeDoc,
+	person, err := req.ToDomain()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "invalid birthday format, use YYYY-MM-DD"})
 	}
 
 	createdPerson, err := h.personService.CreatePerson(person)
 	if err != nil {
+		// Consider more specific error codes, e.g., 409 Conflict if person exists.
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(h.mapPersonToResponse(createdPerson))
+	return c.Status(fiber.StatusCreated).JSON(NewPersonResponse(createdPerson))
 }
 
 // DeletePerson godoc
@@ -145,6 +116,9 @@ func (h *PersonHandler) DeletePerson(c *fiber.Ctx) error {
 	}
 
 	if err := h.personService.DeletePerson(uint(id)); err != nil {
+		if errors.Is(err, ports.ErrPersonNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(ErrorResponse{Error: err.Error()})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 
@@ -157,7 +131,7 @@ func (h *PersonHandler) DeletePerson(c *fiber.Ctx) error {
 // @Tags Person
 // @Produce json
 // @Param q query string false "Search term"
-// @Success 200 {array} PersonResponse
+// @Success 200 {array} handlers.PersonResponse
 // @Failure 400 {object} ErrorResponse "Bad Request"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Failure 500 {object} ErrorResponse "Internal Server Error"
@@ -171,26 +145,11 @@ func (h *PersonHandler) SearchPersons(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 
-	return c.JSON(h.mapPersonsToResponse(persons))
-}
-
-func (h *PersonHandler) mapPersonToResponse(p *domain.Person) PersonResponse {
-	return PersonResponse{
-		ID:         p.ID,
-		Name:       p.Name,
-		MiddleName: p.MiddleName,
-		LastName:   p.LastName,
-		Sex:        p.Sex,
-		Birthday:   p.Birthday,
-		DocNumber:  p.DocNumber,
-		TypeDoc:    p.TypeDoc,
-	}
-}
-
-func (h *PersonHandler) mapPersonsToResponse(persons []domain.Person) []PersonResponse {
-	resp := make([]PersonResponse, len(persons))
+	// Convert domain objects to response DTOs
+	responseDTOs := make([]PersonResponse, len(persons))
 	for i, p := range persons {
-		resp[i] = h.mapPersonToResponse(&p)
+		responseDTOs[i] = NewPersonResponse(&p)
 	}
-	return resp
+
+	return c.JSON(responseDTOs)
 }

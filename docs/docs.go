@@ -584,6 +584,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "photo": {
+                    "type": "string"
+                },
                 "sex": {
                     "enum": [
                         "F",
@@ -628,6 +631,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "photo": {
                     "type": "string"
                 },
                 "sex": {

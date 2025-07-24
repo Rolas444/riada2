@@ -40,6 +40,8 @@ func (s *personServiceImpl) CreateOrUpdatePersonForUser(person *domain.Person) (
 	existingPerson.Birthday = person.Birthday
 	existingPerson.DocNumber = person.DocNumber
 	existingPerson.TypeDoc = person.TypeDoc
+	existingPerson.Email = person.Email
+	existingPerson.Photo = person.Photo
 
 	err = s.personRepo.Save(existingPerson)
 	return existingPerson, err

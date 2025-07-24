@@ -479,6 +479,9 @@
                 "name": {
                     "type": "string"
                 },
+                "photo": {
+                    "type": "string"
+                },
                 "sex": {
                     "enum": [
                         "F",
@@ -523,6 +526,9 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "photo": {
                     "type": "string"
                 },
                 "sex": {

@@ -53,6 +53,8 @@ definitions:
         type: string
       name:
         type: string
+      photo:
+        type: string
       sex:
         allOf:
         - $ref: '#/definitions/domain.Sex'
@@ -86,6 +88,8 @@ definitions:
       middleName:
         type: string
       name:
+        type: string
+      photo:
         type: string
       sex:
         $ref: '#/definitions/domain.Sex'

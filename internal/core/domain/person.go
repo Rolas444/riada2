@@ -18,7 +18,7 @@ type DocType string
 const (
 	DNI      DocType = "DNI"
 	CE       DocType = "CE"
-	Passport DocType = "passport"
+	Passport DocType = "Passport"
 )
 
 // Person representa la información personal de un usuario.
@@ -33,6 +33,8 @@ type Person struct {
 	Birthday   time.Time `gorm:"not null"`
 	DocNumber  *string   `gorm:"type:varchar(20)"` // Permite nulos
 	TypeDoc    *DocType  `gorm:"type:varchar(10)"` // Permite nulos
+	Email      *string   `gorm:"type:varchar(100);uniqueIndex"`
+	Photo      *string   `gorm:"type:varchar(255)"`
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 	UpdatedAt  time.Time `gorm:"autoUpdateTime"`
 }
