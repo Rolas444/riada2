@@ -138,7 +138,7 @@ func (h *PersonHandler) DeletePerson(c *fiber.Ctx) error {
 // @Security ApiKeyAuth
 // @Router /protected/person/search [get]
 func (h *PersonHandler) SearchPersons(c *fiber.Ctx) error {
-	searchTerm := c.Query("q")
+	searchTerm := c.Query("query")
 
 	persons, err := h.personService.SearchPersons(searchTerm)
 	if err != nil {

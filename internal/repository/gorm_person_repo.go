@@ -41,16 +41,16 @@ func (r *gormPersonRepository) FindByUserID(userID uint) (*domain.Person, error)
 
 func (r *gormPersonRepository) Search(searchTerm string) ([]domain.Person, error) {
 	var persons []domain.Person
-	if searchTerm == "" {
-		return persons, nil
+	query := r.db
+
+	if searchTerm != "" {
+		likeTerm := "%" + searchTerm + "%"
+		// Busca en la concatenación de nombre, apellido paterno y materno, O en el número de documento.
+		// Esta sintaxis es para PostgreSQL.
+		query = query.Where("name || ' ' || middle_name || ' ' || last_name ILIKE ? OR doc_number = ?", likeTerm, searchTerm)
 	}
 
-	likeTerm := "%" + searchTerm + "%"
-	// Busca en la concatenación de nombre, apellido paterno y materno, O en el número de documento.
-	// Esta sintaxis es para PostgreSQL.
-	query := r.db.Where("name || ' ' || middle_name || ' ' || last_name ILIKE ? OR doc_number = ?", likeTerm, searchTerm)
-
-	if err := query.Find(&persons).Error; err != nil {
+	if err := query.Order("id DESC").Limit(300).Find(&persons).Error; err != nil {
 		return nil, err
 	}
 	return persons, nil
