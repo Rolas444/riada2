@@ -16,6 +16,7 @@ func NewGormPersonRepository(db *gorm.DB) ports.PersonRepository {
 
 func (r *gormPersonRepository) Save(person *domain.Person) error {
 	// Save actualiza el registro si tiene una clave primaria, o crea uno nuevo si no la tiene.
+	// println("Saving person:", person.ID, person.Name, person.MiddleName)
 	return r.db.Save(person).Error
 }
 

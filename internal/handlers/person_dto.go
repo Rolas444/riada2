@@ -10,6 +10,7 @@ import (
 // de una persona en las solicitudes HTTP (creación o actualización).
 // La validación de los campos (ej. que no estén vacíos) se realiza en el handler.
 type PersonRequest struct {
+	ID         *uint           `json:"id"`
 	Name       string          `json:"name"`
 	MiddleName string          `json:"middleName"`
 	LastName   string          `json:"lastName"`
@@ -33,7 +34,13 @@ func (pr *PersonRequest) ToDomain() (*domain.Person, error) {
 		birthday = &parsedBirthday
 	}
 
+	var id uint
+	if pr.ID != nil {
+		id = *pr.ID
+	}
+
 	return &domain.Person{
+		ID:         id,
 		Name:       pr.Name,
 		MiddleName: pr.MiddleName,
 		LastName:   pr.LastName,

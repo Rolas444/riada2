@@ -20,19 +20,33 @@ func (s *personServiceImpl) CreateOrUpdatePersonForUser(person *domain.Person) (
 	if person.UserID == nil {
 		return nil, errors.New("UserID is required to create or update a person for a user")
 	}
-	// Busca si ya existe un registro de persona para este UserID.
-	existingPerson, err := s.personRepo.FindByID(*&person.ID)
+
+	// Si el ID de la persona es 0, se asume que es una operación de creación.
+	if person.ID == 0 {
+		// GORM creará un nuevo registro porque la clave primaria (ID) es su valor cero.
+		err := s.personRepo.Save(person)
+		return person, err
+	}
+
+	// Si se proporciona un ID, es una operación de actualización.
+	// Primero, buscamos el registro existente en la base de datos.
+	existingPerson, err := s.personRepo.FindByID(person.ID)
 	if err != nil {
-		// Si el error es que no se encontró el registro, creamos uno nuevo.
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err := s.personRepo.Save(person)
-			return person, err
+			// El cliente intentó actualizar una persona que no existe.
+			return nil, ports.ErrPersonNotFound
 		}
-		// Si es otro tipo de error, lo devolvemos.
+		// Otro error de base de datos.
 		return nil, err
 	}
 
-	// Si ya existe, actualizamos los campos del registro existente y lo guardamos.
+	// Comprobación de seguridad: Asegurarse de que el usuario autenticado
+	// solo pueda modificar su propio registro de persona.
+	if existingPerson.UserID == nil || *existingPerson.UserID != *person.UserID {
+		return nil, errors.New("authorization failed: you can only update your own person record")
+	}
+
+	// Actualizamos los campos del registro existente con los nuevos datos.
 	existingPerson.Name = person.Name
 	existingPerson.MiddleName = person.MiddleName
 	existingPerson.LastName = person.LastName
@@ -42,7 +56,9 @@ func (s *personServiceImpl) CreateOrUpdatePersonForUser(person *domain.Person) (
 	existingPerson.TypeDoc = person.TypeDoc
 	existingPerson.Email = person.Email
 	existingPerson.Photo = person.Photo
+	existingPerson.UserID = person.UserID // Actualiza quién hizo la última modificación
 
+	// Guardamos la entidad actualizada. GORM realizará un UPDATE.
 	err = s.personRepo.Save(existingPerson)
 	return existingPerson, err
 }
