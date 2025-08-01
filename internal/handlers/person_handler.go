@@ -82,6 +82,15 @@ func (h *PersonHandler) CreatePersonByAdmin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "invalid birthday format, use YYYY-MM-DD"})
 	}
 
+	// Asignar el ID del administrador que está creando el registro.
+	userID, ok := c.Locals("userID").(float64)
+	if !ok {
+		// No debería ocurrir si el middleware de autenticación funciona.
+		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Error: "user ID not found in context"})
+	}
+	userIDUint := uint(userID)
+	person.UserID = &userIDUint
+
 	createdPerson, err := h.personService.CreatePerson(person)
 	if err != nil {
 		// Consider more specific error codes, e.g., 409 Conflict if person exists.
@@ -138,7 +147,7 @@ func (h *PersonHandler) DeletePerson(c *fiber.Ctx) error {
 // @Security ApiKeyAuth
 // @Router /protected/person/search [get]
 func (h *PersonHandler) SearchPersons(c *fiber.Ctx) error {
-	searchTerm := c.Query("query")
+	searchTerm := c.Query("q")
 
 	persons, err := h.personService.SearchPersons(searchTerm)
 	if err != nil {
