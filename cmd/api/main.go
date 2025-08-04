@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// Migrar el esquema
-	err = db.AutoMigrate(&domain.User{}, &domain.Person{})
+	err = db.AutoMigrate(&domain.User{}, &domain.Person{}, &domain.Address{}, &domain.Phone{})
 	if err != nil {
 		log.Fatalf("could not migrate db: %v", err)
 	}

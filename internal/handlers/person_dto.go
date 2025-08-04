@@ -6,6 +6,18 @@ import (
 	"github.com/riada2/internal/core/domain"
 )
 
+// AddressDTO es el DTO para la información de la dirección.
+type AddressDTO struct {
+	ID      uint   `json:"id,omitempty"`
+	Address string `json:"address" binding:"required"`
+}
+
+// PhoneDTO es el DTO para la información del teléfono.
+type PhoneDTO struct {
+	ID    uint   `json:"id,omitempty"`
+	Phone string `json:"phone" binding:"required"`
+}
+
 // PersonRequest es el DTO (Data Transfer Object) para recibir los datos
 // de una persona en las solicitudes HTTP (creación o actualización).
 // La validación de los campos (ej. que no estén vacíos) se realiza en el handler.
@@ -20,6 +32,8 @@ type PersonRequest struct {
 	TypeDoc    *domain.DocType `json:"typeDoc,omitempty"`
 	Email      *string         `json:"email,omitempty"`
 	Photo      *string         `json:"photo,omitempty"`
+	Addresses  []AddressDTO    `json:"addresses,omitempty"`
+	Phones     []PhoneDTO      `json:"phones,omitempty"`
 }
 
 // ToDomain convierte el DTO PersonRequest a la entidad del dominio domain.Person.
@@ -39,6 +53,28 @@ func (pr *PersonRequest) ToDomain() (*domain.Person, error) {
 		id = *pr.ID
 	}
 
+	// Convertir DTOs de dirección a modelos de dominio
+	var addresses []domain.Address
+	if pr.Addresses != nil {
+		for _, addrDTO := range pr.Addresses {
+			addresses = append(addresses, domain.Address{
+				ID:      addrDTO.ID,
+				Address: addrDTO.Address,
+			})
+		}
+	}
+
+	// Convertir DTOs de teléfono a modelos de dominio
+	var phones []domain.Phone
+	if pr.Phones != nil {
+		for _, phoneDTO := range pr.Phones {
+			phones = append(phones, domain.Phone{
+				ID:    phoneDTO.ID,
+				Phone: phoneDTO.Phone,
+			})
+		}
+	}
+
 	return &domain.Person{
 		ID:         id,
 		Name:       pr.Name,
@@ -50,6 +86,8 @@ func (pr *PersonRequest) ToDomain() (*domain.Person, error) {
 		TypeDoc:    pr.TypeDoc,
 		Email:      pr.Email,
 		Photo:      pr.Photo,
+		Addresses:  addresses,
+		Phones:     phones,
 	}, nil
 }
 
@@ -65,6 +103,8 @@ type PersonResponse struct {
 	TypeDoc    *domain.DocType `json:"typeDoc,omitempty"`
 	Email      *string         `json:"email,omitempty"`
 	Photo      *string         `json:"photo,omitempty"`
+	Addresses  []AddressDTO    `json:"addresses,omitempty"`
+	Phones     []PhoneDTO      `json:"phones,omitempty"`
 }
 
 // NewPersonResponse es una función constructora que convierte una entidad
@@ -74,6 +114,28 @@ func NewPersonResponse(person *domain.Person) PersonResponse {
 	var birthdayStr string
 	if person.Birthday != nil {
 		birthdayStr = person.Birthday.Format("2006-01-02")
+	}
+
+	// Convertir modelos de dominio de dirección a DTOs
+	var addressDTOs []AddressDTO
+	if person.Addresses != nil {
+		for _, addr := range person.Addresses {
+			addressDTOs = append(addressDTOs, AddressDTO{
+				ID:      addr.ID,
+				Address: addr.Address,
+			})
+		}
+	}
+
+	// Convertir modelos de dominio de teléfono a DTOs
+	var phoneDTOs []PhoneDTO
+	if person.Phones != nil {
+		for _, phone := range person.Phones {
+			phoneDTOs = append(phoneDTOs, PhoneDTO{
+				ID:    phone.ID,
+				Phone: phone.Phone,
+			})
+		}
 	}
 
 	return PersonResponse{
@@ -87,5 +149,7 @@ func NewPersonResponse(person *domain.Person) PersonResponse {
 		TypeDoc:    person.TypeDoc,
 		Email:      person.Email,
 		Photo:      person.Photo,
+		Addresses:  addressDTOs,
+		Phones:     phoneDTOs,
 	}
 }
