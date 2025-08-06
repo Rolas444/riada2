@@ -86,6 +86,14 @@ func main() {
 	personService := services.NewPersonService(personRepo)
 	personHandler := handlers.NewPersonHandler(personService)
 
+	addressRepo := repository.NewGormAddressRepository(db)
+	addressService := services.NewAddressService(addressRepo, personRepo)
+	addressHandler := handlers.NewAddressHandler(addressService)
+
+	phoneRepo := repository.NewGormPhoneRepository(db)
+	phoneService := services.NewPhoneService(phoneRepo, personRepo)
+	phoneHandler := handlers.NewPhoneHandler(phoneService)
+
 	createDefaultAdmin(db, userRepo, cfg)
 
 	// Configuración de Fiber
@@ -100,7 +108,7 @@ func main() {
 	}))
 	app.Use(logger.New())
 
-	router.SetupRoutes(app, authHandler, userHandler, personHandler, cfg)
+	router.SetupRoutes(app, authHandler, userHandler, personHandler, addressHandler, phoneHandler, cfg)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%s", cfg.AppPort)))
 }

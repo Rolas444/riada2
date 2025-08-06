@@ -11,7 +11,7 @@ import (
 )
 
 // SetupRoutes define todas las rutas de la aplicación.
-func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, personHandler *handlers.PersonHandler, cfg *config.Config) {
+func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, personHandler *handlers.PersonHandler, addressHandler *handlers.AddressHandler, phoneHandler *handlers.PhoneHandler, cfg *config.Config) {
 	// Ruta para la documentación de Swagger
 	app.Get("/swagger/*", swagger.New())
 
@@ -53,4 +53,16 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler 
 
 	// DELETE /person/:id: Un administrador elimina un registro de persona.
 	personRoutes.Delete("/:id", middleware.RoleRequired(domain.AdminRole), personHandler.DeletePerson)
+
+	// --- Rutas para Address ---
+	addressRoutes := protected.Group("/address")
+	addressRoutes.Post("/", addressHandler.CreateOrUpdateAddress) // Crear
+	addressRoutes.Put("/", addressHandler.CreateOrUpdateAddress)  // Actualizar (usando el mismo handler)
+	addressRoutes.Delete("/:id", addressHandler.DeleteAddress)    // Eliminar
+
+	// --- Rutas para Phone ---
+	phoneRoutes := protected.Group("/phone")
+	phoneRoutes.Post("/", phoneHandler.CreateOrUpdatePhone)
+	phoneRoutes.Put("/", phoneHandler.CreateOrUpdatePhone)
+	phoneRoutes.Delete("/:id", phoneHandler.DeletePhone)
 }
