@@ -6,18 +6,6 @@ import (
 	"github.com/riada2/internal/core/domain"
 )
 
-// AddressDTO es el DTO para la información de la dirección.
-type AddressDTO struct {
-	ID      uint   `json:"id,omitempty"`
-	Address string `json:"address" binding:"required"`
-}
-
-// PhoneDTO es el DTO para la información del teléfono.
-type PhoneDTO struct {
-	ID    uint   `json:"id,omitempty"`
-	Phone string `json:"phone" binding:"required"`
-}
-
 // PersonRequest es el DTO (Data Transfer Object) para recibir los datos
 // de una persona en las solicitudes HTTP (creación o actualización).
 // La validación de los campos (ej. que no estén vacíos) se realiza en el handler.
