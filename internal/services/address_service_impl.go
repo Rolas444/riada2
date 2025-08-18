@@ -17,15 +17,25 @@ func NewAddressService(addressRepo ports.AddressRepository, personRepo ports.Per
 	return &addressServiceImpl{addressRepo, personRepo}
 }
 
-func (s *addressServiceImpl) CreateOrUpdateAddressForUser(address *domain.Address, userID uint) (*domain.Address, error) {
+func (s *addressServiceImpl) CreateOrUpdateAddress(address *domain.Address) (*domain.Address, error) {
+
+	// Validar que la persona (PersonID) a la que se asocia la dirección realmente exista.
+	_, err := s.personRepo.FindByID(address.PersonID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Usamos un error específico para que el handler pueda interpretarlo.
+			return nil, ports.ErrPersonNotFound
+		}
+		return nil, err // Otro error de base de datos.
+	}
 
 	// Es una dirección nueva, verificar el límite. Una persona no puede tener más de 3 direcciones.
 	count, err := s.addressRepo.CountByPersonID(address.PersonID)
 	if err != nil {
 		return nil, err
 	}
-	if count >= 3 {
-		return nil, errors.New("una persona no puede tener más de 3 direcciones")
+	if count >= 2 {
+		return nil, errors.New("una persona no puede tener más de 2 direcciones")
 	}
 
 	if err := s.addressRepo.Save(address); err != nil {
@@ -35,26 +45,8 @@ func (s *addressServiceImpl) CreateOrUpdateAddressForUser(address *domain.Addres
 	return address, nil
 }
 
-func (s *addressServiceImpl) DeleteAddressForUser(addressID uint, userID uint) error {
+func (s *addressServiceImpl) DeleteAddress(addressID uint) error {
 	// Find the person associated with the user
-	person, err := s.personRepo.FindByUserID(userID)
-	if err != nil {
-		return errors.New("no person profile found for this user")
-	}
-
-	// Find the address to be deleted
-	address, err := s.addressRepo.FindByID(addressID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("address not found")
-		}
-		return err
-	}
-
-	// Check if the address belongs to the correct person
-	if address.PersonID != person.ID {
-		return errors.New("authorization failed: you can only delete your own addresses")
-	}
 
 	return s.addressRepo.Delete(addressID)
 }

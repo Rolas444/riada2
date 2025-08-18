@@ -56,3 +56,11 @@ func (r *gormPersonRepository) Search(searchTerm string) ([]domain.Person, error
 	}
 	return persons, nil
 }
+
+func (r *gormPersonRepository) FindByDocument(docType domain.DocType, docNumber string) (*domain.Person, error) {
+	var person domain.Person
+	if err := r.db.Where("type_doc = ? AND doc_number = ?", docType, docNumber).First(&person).Error; err != nil {
+		return nil, err
+	}
+	return &person, nil
+}

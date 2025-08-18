@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,27 +24,28 @@ func (h *PhoneHandler) CreateOrUpdatePhone(c *fiber.Ctx) error {
 	}
 
 	phone := &domain.Phone{
-		ID:    req.ID,
-		Phone: req.Phone,
+		ID:       req.ID,
+		PersonID: req.PersonID,
+		Phone:    req.Phone,
 	}
 
-	userID, ok := c.Locals("userID").(float64)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Error: "user ID not found in context"})
-	}
-	userIDUint := uint(userID)
+	println("phone", phone.PersonID)
+	savedPhone, err := h.phoneService.CreateOrUpdatePhone(phone)
 
-	savedPhone, err := h.phoneService.CreateOrUpdatePhoneForUser(phone, userIDUint)
 	if err != nil {
+		if errors.Is(err, ports.ErrPersonNotFound) {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "la persona especificada no existe"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 
 	responseDTO := PhoneDTO{
-		ID:    savedPhone.ID,
-		Phone: savedPhone.Phone,
+		ID:       savedPhone.ID,
+		PersonID: savedPhone.PersonID,
+		Phone:    savedPhone.Phone,
 	}
 
-	return c.Status(fiber.StatusOK).JSON(responseDTO)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": responseDTO})
 }
 
 func (h *PhoneHandler) DeletePhone(c *fiber.Ctx) error {

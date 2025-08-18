@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,29 +25,28 @@ func (h *AddressHandler) CreateOrUpdateAddress(c *fiber.Ctx) error {
 
 	// El ID del DTO se usará para actualizaciones. Si es 0, es una creación.
 	address := &domain.Address{
-		ID:      req.ID,
-		Address: req.Address,
+		ID:       req.ID,
+		PersonID: req.PersonID,
+		Address:  req.Address,
 	}
 
-	userID, ok := c.Locals("userID").(float64)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Error: "user ID not found in context"})
-	}
-	userIDUint := uint(userID)
-
-	savedAddress, err := h.addressService.CreateOrUpdateAddressForUser(address, userIDUint)
+	savedAddress, err := h.addressService.CreateOrUpdateAddress(address)
 	if err != nil {
-		// Se podría manejar errores específicos como "no encontrado" o "no autorizado"
+		if errors.Is(err, ports.ErrPersonNotFound) {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "la persona especificada no existe"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 
 	// Devolver la dirección guardada como un DTO
 	responseDTO := AddressDTO{
-		ID:      savedAddress.ID,
-		Address: savedAddress.Address,
+		ID:       savedAddress.ID,
+		PersonID: savedAddress.PersonID,
+		Address:  savedAddress.Address,
 	}
 
-	return c.Status(fiber.StatusOK).JSON(responseDTO)
+	// return c.Status(fiber.StatusOK).JSON(responseDTO)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": responseDTO})
 }
 
 func (h *AddressHandler) DeleteAddress(c *fiber.Ctx) error {
@@ -60,13 +60,7 @@ func (h *AddressHandler) DeleteAddress(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "invalid address ID format"})
 	}
 
-	userID, ok := c.Locals("userID").(float64)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{Error: "user ID not found in context"})
-	}
-	userIDUint := uint(userID)
-
-	if err := h.addressService.DeleteAddressForUser(uint(id), userIDUint); err != nil {
+	if err := h.addressService.DeleteAddress(uint(id)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 

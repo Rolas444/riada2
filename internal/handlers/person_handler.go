@@ -26,6 +26,7 @@ func NewPersonHandler(personService ports.PersonService) *PersonHandler {
 // @Success 200 {object} handlers.PersonResponse
 // @Failure 400 {object} ErrorResponse "Bad Request"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 409 {object} ErrorResponse "Conflict - Document already exists"
 // @Failure 500 {object} ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /protected/person [put]
@@ -51,6 +52,9 @@ func (h *PersonHandler) CreateOrUpdatePersonForUser(c *fiber.Ctx) error {
 
 	updatedPerson, err := h.personService.CreateOrUpdatePersonForUser(person)
 	if err != nil {
+		if errors.Is(err, ports.ErrPersonDocumentExists) {
+			return c.Status(fiber.StatusConflict).JSON(ErrorResponse{Error: err.Error()})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 
@@ -68,6 +72,7 @@ func (h *PersonHandler) CreateOrUpdatePersonForUser(c *fiber.Ctx) error {
 // @Failure 400 {object} ErrorResponse "Bad Request"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Failure 403 {object} ErrorResponse "Forbidden"
+// @Failure 409 {object} ErrorResponse "Conflict - Document already exists"
 // @Failure 500 {object} ErrorResponse "Internal Server Error"
 // @Security ApiKeyAuth
 // @Router /protected/person [post]
@@ -93,7 +98,9 @@ func (h *PersonHandler) CreatePersonByAdmin(c *fiber.Ctx) error {
 
 	createdPerson, err := h.personService.CreatePerson(person)
 	if err != nil {
-		// Consider more specific error codes, e.g., 409 Conflict if person exists.
+		if errors.Is(err, ports.ErrPersonDocumentExists) {
+			return c.Status(fiber.StatusConflict).JSON(ErrorResponse{Error: err.Error()})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{Error: err.Error()})
 	}
 

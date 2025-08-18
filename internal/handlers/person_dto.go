@@ -109,8 +109,9 @@ func NewPersonResponse(person *domain.Person) PersonResponse {
 	if person.Addresses != nil {
 		for _, addr := range person.Addresses {
 			addressDTOs = append(addressDTOs, AddressDTO{
-				ID:      addr.ID,
-				Address: addr.Address,
+				ID:       addr.ID,
+				PersonID: person.ID,
+				Address:  addr.Address,
 			})
 		}
 	}
@@ -120,8 +121,9 @@ func NewPersonResponse(person *domain.Person) PersonResponse {
 	if person.Phones != nil {
 		for _, phone := range person.Phones {
 			phoneDTOs = append(phoneDTOs, PhoneDTO{
-				ID:    phone.ID,
-				Phone: phone.Phone,
+				ID:       phone.ID,
+				PersonID: person.ID,
+				Phone:    phone.Phone,
 			})
 		}
 	}

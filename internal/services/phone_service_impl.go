@@ -17,14 +17,16 @@ func NewPhoneService(phoneRepo ports.PhoneRepository, personRepo ports.PersonRep
 	return &phoneServiceImpl{phoneRepo, personRepo}
 }
 
-func (s *phoneServiceImpl) CreateOrUpdatePhoneForUser(phone *domain.Phone, userID uint) (*domain.Phone, error) {
-	// Find the person associated with the user
-	person, err := s.personRepo.FindByUserID(userID)
+func (s *phoneServiceImpl) CreateOrUpdatePhone(phone *domain.Phone) (*domain.Phone, error) {
+
+	// Validar que la persona (PersonID) a la que se asocia el teléfono realmente exista.
+	_, err := s.personRepo.FindByID(phone.PersonID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("no person profile found for this user, please create one first")
+			// Usamos un error específico para que el handler pueda interpretarlo.
+			return nil, ports.ErrPersonNotFound
 		}
-		return nil, err
+		return nil, err // Otro error de base deatos.
 	}
 
 	// If it's an update, check ownership
@@ -37,13 +39,13 @@ func (s *phoneServiceImpl) CreateOrUpdatePhoneForUser(phone *domain.Phone, userI
 			return nil, err
 		}
 		// Check if the phone belongs to the correct person
-		if existingPhone.PersonID != person.ID {
+		if existingPhone.PersonID != phone.PersonID {
 			return nil, errors.New("authorization failed: you can only update your own phones")
 		}
 	} else {
 		// Es un teléfono nuevo, verificar el límite. Una persona no puede tener más de 2 números.
 		// Se asume que el repositorio provee un método para contar los teléfonos de una persona.
-		count, err := s.phoneRepo.CountByPersonID(person.ID)
+		count, err := s.phoneRepo.CountByPersonID(phone.PersonID)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +55,7 @@ func (s *phoneServiceImpl) CreateOrUpdatePhoneForUser(phone *domain.Phone, userI
 	}
 
 	// Associate the phone with the person and save
-	phone.PersonID = person.ID
+
 	if err := s.phoneRepo.Save(phone); err != nil {
 		return nil, err
 	}

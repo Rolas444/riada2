@@ -10,4 +10,5 @@ type PersonRepository interface {
 	Delete(id uint) error
 	FindByID(id uint) (*domain.Person, error)
 	Search(searchTerm string) ([]domain.Person, error)
+	FindByDocument(docType domain.DocType, docNumber string) (*domain.Person, error)
 }
