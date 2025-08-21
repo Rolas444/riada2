@@ -34,6 +34,7 @@ type Person struct {
 	Photo      *string
 	Addresses  []Address
 	Phones     []Phone
+	Membership *Membership // Relación 1:1 con Membership
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }

@@ -29,13 +29,16 @@ func (s *addressServiceImpl) CreateOrUpdateAddress(address *domain.Address) (*do
 		return nil, err // Otro error de base de datos.
 	}
 
-	// Es una dirección nueva, verificar el límite. Una persona no puede tener más de 3 direcciones.
-	count, err := s.addressRepo.CountByPersonID(address.PersonID)
-	if err != nil {
-		return nil, err
-	}
-	if count >= 2 {
-		return nil, errors.New("una persona no puede tener más de 2 direcciones")
+	// Solo validar la cantidad de registros si es una dirección nueva (sin ID o ID = 0)
+	if address.ID == 0 {
+		// Es una dirección nueva, verificar el límite. Una persona no puede tener más de 2 direcciones.
+		count, err := s.addressRepo.CountByPersonID(address.PersonID)
+		if err != nil {
+			return nil, err
+		}
+		if count >= 2 {
+			return nil, errors.New("una persona no puede tener más de 2 direcciones")
+		}
 	}
 
 	if err := s.addressRepo.Save(address); err != nil {
