@@ -11,7 +11,7 @@ import (
 )
 
 // SetupRoutes define todas las rutas de la aplicación.
-func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, personHandler *handlers.PersonHandler, addressHandler *handlers.AddressHandler, phoneHandler *handlers.PhoneHandler, cfg *config.Config) {
+func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, personHandler *handlers.PersonHandler, addressHandler *handlers.AddressHandler, phoneHandler *handlers.PhoneHandler, membershipHandler *handlers.MembershipHandler, cfg *config.Config) {
 	// Ruta para la documentación de Swagger
 	app.Get("/swagger/*", swagger.New())
 
@@ -65,4 +65,9 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler 
 	phoneRoutes.Post("/", phoneHandler.CreateOrUpdatePhone)
 	phoneRoutes.Put("/", phoneHandler.CreateOrUpdatePhone)
 	phoneRoutes.Delete("/:id", phoneHandler.DeletePhone)
+
+	// --- Rutas para Membership ---
+	membershipRoutes := protected.Group("/membership")
+	membershipRoutes.Post("/", membershipHandler.CreateMembership)                    // Crear membresía
+	membershipRoutes.Get("/person/:personID", membershipHandler.GetMembershipByPersonID) // Obtener membresía por persona
 }

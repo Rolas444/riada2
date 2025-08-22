@@ -79,6 +79,20 @@ func (pr *PersonRequest) ToDomain() (*domain.Person, error) {
 	}, nil
 }
 
+// MembershipDTO es el DTO para la información de membresía en las respuestas de Person
+type MembershipDTO struct {
+	ID               uint       `json:"id,omitempty"`
+	StartedAt        *string    `json:"startedAt,omitempty"` // Se envía en formato "YYYY-MM-DD"
+	MembershipSigned bool       `json:"membershipSigned"`
+	State            string     `json:"state"`
+	Transferred      bool       `json:"transferred"`
+	NameLastChurch   *string    `json:"nameLastChurch,omitempty"`
+	Baptized         bool       `json:"baptized"`
+	BaptismDate      *string    `json:"baptismDate,omitempty"` // Se envía en formato "YYYY-MM-DD"
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt        *time.Time `json:"updatedAt,omitempty"`
+}
+
 // PersonResponse es el DTO para enviar la información de una persona en las respuestas HTTP.
 type PersonResponse struct {
 	ID         uint            `json:"id"`
@@ -93,6 +107,7 @@ type PersonResponse struct {
 	Photo      *string         `json:"photo,omitempty"`
 	Addresses  []AddressDTO    `json:"addresses,omitempty"`
 	Phones     []PhoneDTO      `json:"phones,omitempty"`
+	Membership *MembershipDTO  `json:"membership,omitempty"`
 }
 
 // NewPersonResponse es una función constructora que convierte una entidad
@@ -128,6 +143,35 @@ func NewPersonResponse(person *domain.Person) PersonResponse {
 		}
 	}
 
+	// Convertir modelo de dominio de membresía a DTO
+	var membershipDTO *MembershipDTO
+	if person.Membership != nil {
+		var startedAtStr *string
+		if person.Membership.StartedAt != nil {
+			startedAt := person.Membership.StartedAt.Format("2006-01-02")
+			startedAtStr = &startedAt
+		}
+
+		var baptismDateStr *string
+		if person.Membership.BaptismDate != nil {
+			baptismDate := person.Membership.BaptismDate.Format("2006-01-02")
+			baptismDateStr = &baptismDate
+		}
+
+		membershipDTO = &MembershipDTO{
+			ID:               person.Membership.ID,
+			StartedAt:        startedAtStr,
+			MembershipSigned: person.Membership.MembershipSigned,
+			State:            string(person.Membership.State),
+			Transferred:      person.Membership.Transferred,
+			NameLastChurch:   person.Membership.NameLastChurch,
+			Baptized:         person.Membership.Baptized,
+			BaptismDate:      baptismDateStr,
+			CreatedAt:        &person.Membership.CreatedAt,
+			UpdatedAt:        &person.Membership.UpdatedAt,
+		}
+	}
+
 	return PersonResponse{
 		ID:         person.ID,
 		Name:       person.Name,
@@ -141,5 +185,6 @@ func NewPersonResponse(person *domain.Person) PersonResponse {
 		Photo:      person.Photo,
 		Addresses:  addressDTOs,
 		Phones:     phoneDTOs,
+		Membership: membershipDTO,
 	}
 }

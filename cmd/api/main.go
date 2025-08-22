@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// Migrar el esquema
-	err = db.AutoMigrate(&domain.User{}, &domain.Person{}, &domain.Address{}, &domain.Phone{})
+	err = db.AutoMigrate(&domain.User{}, &domain.Person{}, &domain.Address{}, &domain.Phone{}, &domain.Membership{})
 	if err != nil {
 		log.Fatalf("could not migrate db: %v", err)
 	}
@@ -94,6 +94,10 @@ func main() {
 	phoneService := services.NewPhoneService(phoneRepo, personRepo)
 	phoneHandler := handlers.NewPhoneHandler(phoneService)
 
+	membershipRepo := repository.NewGormMembershipRepository(db)
+	membershipService := services.NewMembershipService(membershipRepo)
+	membershipHandler := handlers.NewMembershipHandler(membershipService, personService)
+
 	createDefaultAdmin(db, userRepo, cfg)
 
 	// Configuración de Fiber
@@ -108,7 +112,7 @@ func main() {
 	}))
 	app.Use(logger.New())
 
-	router.SetupRoutes(app, authHandler, userHandler, personHandler, addressHandler, phoneHandler, cfg)
+	router.SetupRoutes(app, authHandler, userHandler, personHandler, addressHandler, phoneHandler, membershipHandler, cfg)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%s", cfg.AppPort)))
 }
