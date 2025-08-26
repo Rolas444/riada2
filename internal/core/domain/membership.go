@@ -6,10 +6,8 @@ import "time"
 type MembershipState string
 
 const (
-	Active      MembershipState = "A" // Activa
-	Inactive    MembershipState = "I" // Inactivo
-	Observation MembershipState = "O" // Observación
-	Suspended   MembershipState = "S" // Suspendida
+	Active   MembershipState = "A" // Activa
+	Inactive MembershipState = "I" // Inactivo
 )
 
 // Membership representa la entidad de membresía en el sistema.

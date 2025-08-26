@@ -88,7 +88,7 @@ func (h *MembershipHandler) CreateMembership(c *fiber.Ctx) error {
 		UpdatedAt:        createdMembership.UpdatedAt,
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(response)
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": response})
 }
 
 // GetMembershipByPersonID godoc
@@ -128,5 +128,69 @@ func (h *MembershipHandler) GetMembershipByPersonID(c *fiber.Ctx) error {
 		UpdatedAt:        membership.UpdatedAt,
 	}
 
-	return c.JSON(response)
+	return c.JSON(fiber.Map{"data": response})
+}
+
+// UpdateMembership godoc
+// @Summary      Actualizar una membresía existente
+// @Description  Actualiza una membresía existente por ID. Solo usuarios autenticados pueden actualizar membresías.
+// @Tags         Membership
+// @Accept       json
+// @Produce      json
+// @Param        membership body UpdateMembershipRequest true "Información de la membresía a actualizar (incluye ID)"
+// @Success      200 {object} MembershipResponse
+// @Failure      400 {object} ErrorResponse "Datos inválidos o persona no encontrada"
+// @Failure      401 {object} ErrorResponse "No autorizado"
+// @Failure      404 {object} ErrorResponse "Membresía no encontrada"
+// @Failure      500 {object} ErrorResponse "Error interno del servidor"
+// @Security     ApiKeyAuth
+// @Router       /protected/membership [put]
+func (h *MembershipHandler) UpdateMembership(c *fiber.Ctx) error {
+	var req UpdateMembershipRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
+	}
+
+	// Verificar que la persona existe
+	_, err := h.personService.GetPersonByID(req.PersonID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "person not found"})
+	}
+
+	// Crear el objeto de membresía con los datos de la solicitud
+	membershipData := &domain.Membership{
+		PersonID:         req.PersonID,
+		StartedAt:        req.StartedAt,
+		MembershipSigned: req.MembershipSigned,
+		State:            domain.MembershipState(req.State),
+		Transferred:      req.Transferred,
+		NameLastChurch:   req.NameLastChurch,
+		Baptized:         req.Baptized,
+		BaptismDate:      req.BaptismDate,
+	}
+
+	// Actualizar la membresía usando el ID del cuerpo de la solicitud
+	updatedMembership, err := h.membershipService.UpdateMembership(req.ID, membershipData)
+	if err != nil {
+		if err.Error() == "membership not found" {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "membership not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not update membership"})
+	}
+
+	response := MembershipResponse{
+		ID:               updatedMembership.ID,
+		PersonID:         updatedMembership.PersonID,
+		StartedAt:        updatedMembership.StartedAt,
+		MembershipSigned: updatedMembership.MembershipSigned,
+		State:            string(updatedMembership.State),
+		Transferred:      updatedMembership.Transferred,
+		NameLastChurch:   updatedMembership.NameLastChurch,
+		Baptized:         updatedMembership.Baptized,
+		BaptismDate:      updatedMembership.BaptismDate,
+		CreatedAt:        updatedMembership.CreatedAt,
+		UpdatedAt:        updatedMembership.UpdatedAt,
+	}
+
+	return c.JSON(fiber.Map{"data": response})
 }

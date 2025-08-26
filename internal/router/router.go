@@ -68,6 +68,7 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler 
 
 	// --- Rutas para Membership ---
 	membershipRoutes := protected.Group("/membership")
-	membershipRoutes.Post("/", membershipHandler.CreateMembership)                    // Crear membresía
+	membershipRoutes.Post("/", membershipHandler.CreateMembership)                       // Crear membresía
 	membershipRoutes.Get("/person/:personID", membershipHandler.GetMembershipByPersonID) // Obtener membresía por persona
+	membershipRoutes.Put("/", membershipHandler.UpdateMembership)                        // Actualizar membresía
 }
