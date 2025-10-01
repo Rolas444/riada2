@@ -478,6 +478,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "domain.CivilStatus": {
+            "type": "string",
+            "enum": [
+                "single",
+                "married",
+                "divorced",
+                "widowed"
+            ],
+            "x-enum-varnames": [
+                "Single",
+                "Married",
+                "Divorced",
+                "Widowed"
+            ]
+        },
         "domain.DocType": {
             "type": "string",
             "enum": [
@@ -572,6 +587,22 @@ const docTemplate = `{
                 "birthday": {
                     "type": "string"
                 },
+                "childrenCount": {
+                    "type": "integer"
+                },
+                "civilStatus": {
+                    "enum": [
+                        "single",
+                        "married",
+                        "divorced",
+                        "widowed"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.CivilStatus"
+                        }
+                    ]
+                },
                 "docNumber": {
                     "type": "string"
                 },
@@ -617,6 +648,12 @@ const docTemplate = `{
             "properties": {
                 "birthday": {
                     "type": "string"
+                },
+                "childrenCount": {
+                    "type": "integer"
+                },
+                "civilStatus": {
+                    "$ref": "#/definitions/domain.CivilStatus"
                 },
                 "docNumber": {
                     "type": "string"

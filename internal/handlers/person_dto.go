@@ -10,18 +10,20 @@ import (
 // de una persona en las solicitudes HTTP (creación o actualización).
 // La validación de los campos (ej. que no estén vacíos) se realiza en el handler.
 type PersonRequest struct {
-	ID         *uint           `json:"id"`
-	Name       string          `json:"name"`
-	MiddleName string          `json:"middleName"`
-	LastName   string          `json:"lastName"`
-	Sex        domain.Sex      `json:"sex"`
-	Birthday   *string         `json:"birthday,omitempty"` // Se espera el formato "YYYY-MM-DD"
-	DocNumber  *string         `json:"docNumber,omitempty"`
-	TypeDoc    *domain.DocType `json:"typeDoc,omitempty"`
-	Email      *string         `json:"email,omitempty"`
-	Photo      *string         `json:"photo,omitempty"`
-	Addresses  []AddressDTO    `json:"addresses,omitempty"`
-	Phones     []PhoneDTO      `json:"phones,omitempty"`
+	ID            *uint               `json:"id"`
+	Name          string              `json:"name"`
+	MiddleName    string              `json:"middleName"`
+	LastName      string              `json:"lastName"`
+	Sex           domain.Sex          `json:"sex"`
+	Birthday      *string             `json:"birthday,omitempty"` // Se espera el formato "YYYY-MM-DD"
+	DocNumber     *string             `json:"docNumber,omitempty"`
+	TypeDoc       *domain.DocType     `json:"typeDoc,omitempty"`
+	Email         *string             `json:"email,omitempty"`
+	Photo         *string             `json:"photo,omitempty"`
+	CivilStatus   *domain.CivilStatus `json:"civilStatus,omitempty"`
+	ChildrenCount *int                `json:"childrenCount,omitempty"`
+	Addresses     []AddressDTO        `json:"addresses,omitempty"`
+	Phones        []PhoneDTO          `json:"phones,omitempty"`
 }
 
 // ToDomain convierte el DTO PersonRequest a la entidad del dominio domain.Person.
@@ -63,51 +65,62 @@ func (pr *PersonRequest) ToDomain() (*domain.Person, error) {
 		}
 	}
 
+	var civilStatus domain.CivilStatus
+	if pr.CivilStatus != nil {
+		civilStatus = *pr.CivilStatus
+	}
+
 	return &domain.Person{
-		ID:         id,
-		Name:       pr.Name,
-		MiddleName: pr.MiddleName,
-		LastName:   pr.LastName,
-		Sex:        pr.Sex,
-		Birthday:   birthday,
-		DocNumber:  pr.DocNumber,
-		TypeDoc:    pr.TypeDoc,
-		Email:      pr.Email,
-		Photo:      pr.Photo,
-		Addresses:  addresses,
-		Phones:     phones,
+		ID:            id,
+		Name:          pr.Name,
+		MiddleName:    pr.MiddleName,
+		LastName:      pr.LastName,
+		Sex:           pr.Sex,
+		Birthday:      birthday,
+		DocNumber:     pr.DocNumber,
+		TypeDoc:       pr.TypeDoc,
+		Email:         pr.Email,
+		ChildrenCount: pr.ChildrenCount,
+		CivilStatus:   civilStatus,
+		Photo:         pr.Photo,
+		Addresses:     addresses,
+		Phones:        phones,
 	}, nil
 }
 
 // MembershipDTO es el DTO para la información de membresía en las respuestas de Person
 type MembershipDTO struct {
-	ID               uint       `json:"id,omitempty"`
-	StartedAt        *string    `json:"startedAt,omitempty"` // Se envía en formato "YYYY-MM-DD"
-	MembershipSigned bool       `json:"membershipSigned"`
-	State            string     `json:"state"`
-	Transferred      bool       `json:"transferred"`
-	NameLastChurch   *string    `json:"nameLastChurch,omitempty"`
-	Baptized         bool       `json:"baptized"`
-	BaptismDate      *string    `json:"baptismDate,omitempty"` // Se envía en formato "YYYY-MM-DD"
-	CreatedAt        *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt        *time.Time `json:"updatedAt,omitempty"`
+	ID               uint                `json:"id,omitempty"`
+	StartedAt        *string             `json:"startedAt,omitempty"` // Se envía en formato "YYYY-MM-DD"
+	MembershipSigned bool                `json:"membershipSigned"`
+	State            string              `json:"state"`
+	Transferred      bool                `json:"transferred"`
+	NameLastChurch   *string             `json:"nameLastChurch,omitempty"`
+	Baptized         bool                `json:"baptized"`
+	BaptismDate      *string             `json:"baptismDate,omitempty"` // Se envía en formato "YYYY-MM-DD"
+	CivilStatus      *domain.CivilStatus `json:"civilStatus,omitempty"`
+	ChildrenCount    *int                `json:"childrenCount,omitempty"`
+	CreatedAt        *time.Time          `json:"createdAt,omitempty"`
+	UpdatedAt        *time.Time          `json:"updatedAt,omitempty"`
 }
 
 // PersonResponse es el DTO para enviar la información de una persona en las respuestas HTTP.
 type PersonResponse struct {
-	ID         uint            `json:"id"`
-	Name       string          `json:"name"`
-	MiddleName string          `json:"middleName"`
-	LastName   string          `json:"lastName"`
-	Sex        domain.Sex      `json:"sex"`
-	Birthday   string          `json:"birthday,omitempty"` // Se envía en formato "YYYY-MM-DD"
-	DocNumber  *string         `json:"docNumber,omitempty"`
-	TypeDoc    *domain.DocType `json:"typeDoc,omitempty"`
-	Email      *string         `json:"email,omitempty"`
-	Photo      *string         `json:"photo,omitempty"`
-	Addresses  []AddressDTO    `json:"addresses,omitempty"`
-	Phones     []PhoneDTO      `json:"phones,omitempty"`
-	Membership *MembershipDTO  `json:"membership,omitempty"`
+	ID            uint                `json:"id"`
+	Name          string              `json:"name"`
+	MiddleName    string              `json:"middleName"`
+	LastName      string              `json:"lastName"`
+	Sex           domain.Sex          `json:"sex"`
+	Birthday      string              `json:"birthday,omitempty"` // Se envía en formato "YYYY-MM-DD"
+	DocNumber     *string             `json:"docNumber,omitempty"`
+	TypeDoc       *domain.DocType     `json:"typeDoc,omitempty"`
+	Email         *string             `json:"email,omitempty"`
+	Photo         *string             `json:"photo,omitempty"`
+	ChildrenCount *int                `json:"childrenCount,omitempty"`
+	CivilStatus   *domain.CivilStatus `json:"civilStatus,omitempty"`
+	Addresses     []AddressDTO        `json:"addresses,omitempty"`
+	Phones        []PhoneDTO          `json:"phones,omitempty"`
+	Membership    *MembershipDTO      `json:"membership,omitempty"`
 }
 
 // NewPersonResponse es una función constructora que convierte una entidad
@@ -167,24 +180,33 @@ func NewPersonResponse(person *domain.Person) PersonResponse {
 			NameLastChurch:   person.Membership.NameLastChurch,
 			Baptized:         person.Membership.Baptized,
 			BaptismDate:      baptismDateStr,
+			CivilStatus:      &person.CivilStatus,
+			ChildrenCount:    person.ChildrenCount,
 			CreatedAt:        &person.Membership.CreatedAt,
 			UpdatedAt:        &person.Membership.UpdatedAt,
 		}
 	}
 
+	var civilStatusPtr *domain.CivilStatus
+	if person.CivilStatus != "" {
+		civilStatusPtr = &person.CivilStatus
+	}
+
 	return PersonResponse{
-		ID:         person.ID,
-		Name:       person.Name,
-		MiddleName: person.MiddleName,
-		LastName:   person.LastName,
-		Sex:        person.Sex,
-		Birthday:   birthdayStr,
-		DocNumber:  person.DocNumber,
-		TypeDoc:    person.TypeDoc,
-		Email:      person.Email,
-		Photo:      person.Photo,
-		Addresses:  addressDTOs,
-		Phones:     phoneDTOs,
-		Membership: membershipDTO,
+		ID:            person.ID,
+		Name:          person.Name,
+		MiddleName:    person.MiddleName,
+		LastName:      person.LastName,
+		Sex:           person.Sex,
+		Birthday:      birthdayStr,
+		DocNumber:     person.DocNumber,
+		TypeDoc:       person.TypeDoc,
+		Email:         person.Email,
+		CivilStatus:   civilStatusPtr,
+		ChildrenCount: person.ChildrenCount,
+		Photo:         person.Photo,
+		Addresses:     addressDTOs,
+		Phones:        phoneDTOs,
+		Membership:    membershipDTO,
 	}
 }

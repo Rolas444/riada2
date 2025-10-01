@@ -78,6 +78,8 @@ func (s *personServiceImpl) CreateOrUpdatePersonForUser(person *domain.Person) (
 	existingPerson.TypeDoc = person.TypeDoc
 	existingPerson.Email = person.Email
 	existingPerson.Photo = person.Photo
+	existingPerson.CivilStatus = person.CivilStatus
+	existingPerson.ChildrenCount = person.ChildrenCount
 
 	// Validar la unicidad del documento DESPUÉS de actualizar los campos y ANTES de guardar.
 	if err := s.checkDocumentUniqueness(existingPerson); err != nil {

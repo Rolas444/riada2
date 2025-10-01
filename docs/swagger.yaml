@@ -1,5 +1,17 @@
 basePath: /api/v1
 definitions:
+  domain.CivilStatus:
+    enum:
+    - single
+    - married
+    - divorced
+    - widowed
+    type: string
+    x-enum-varnames:
+    - Single
+    - Married
+    - Divorced
+    - Widowed
   domain.DocType:
     enum:
     - DNI
@@ -45,6 +57,16 @@ definitions:
     properties:
       birthday:
         type: string
+      childrenCount:
+        type: integer
+      civilStatus:
+        allOf:
+        - $ref: '#/definitions/domain.CivilStatus'
+        enum:
+        - single
+        - married
+        - divorced
+        - widowed
       docNumber:
         type: string
       lastName:
@@ -79,6 +101,10 @@ definitions:
     properties:
       birthday:
         type: string
+      childrenCount:
+        type: integer
+      civilStatus:
+        $ref: '#/definitions/domain.CivilStatus'
       docNumber:
         type: string
       id:

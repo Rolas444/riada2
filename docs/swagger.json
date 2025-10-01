@@ -396,6 +396,21 @@
         }
     },
     "definitions": {
+        "domain.CivilStatus": {
+            "type": "string",
+            "enum": [
+                "single",
+                "married",
+                "divorced",
+                "widowed"
+            ],
+            "x-enum-varnames": [
+                "Single",
+                "Married",
+                "Divorced",
+                "Widowed"
+            ]
+        },
         "domain.DocType": {
             "type": "string",
             "enum": [
@@ -467,6 +482,22 @@
                 "birthday": {
                     "type": "string"
                 },
+                "childrenCount": {
+                    "type": "integer"
+                },
+                "civilStatus": {
+                    "enum": [
+                        "single",
+                        "married",
+                        "divorced",
+                        "widowed"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.CivilStatus"
+                        }
+                    ]
+                },
                 "docNumber": {
                     "type": "string"
                 },
@@ -512,6 +543,12 @@
             "properties": {
                 "birthday": {
                     "type": "string"
+                },
+                "childrenCount": {
+                    "type": "integer"
+                },
+                "civilStatus": {
+                    "$ref": "#/definitions/domain.CivilStatus"
                 },
                 "docNumber": {
                     "type": "string"
