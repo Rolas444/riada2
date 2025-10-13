@@ -11,7 +11,7 @@ import (
 )
 
 // SetupRoutes define todas las rutas de la aplicación.
-func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, personHandler *handlers.PersonHandler, addressHandler *handlers.AddressHandler, phoneHandler *handlers.PhoneHandler, membershipHandler *handlers.MembershipHandler, cfg *config.Config) {
+func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler, personHandler *handlers.PersonHandler, addressHandler *handlers.AddressHandler, phoneHandler *handlers.PhoneHandler, membershipHandler *handlers.MembershipHandler, ministryHandler *handlers.MinistryHandler, cfg *config.Config) {
 	// Ruta para la documentación de Swagger
 	app.Get("/swagger/*", swagger.New())
 
@@ -71,4 +71,14 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler 
 	membershipRoutes.Post("/", membershipHandler.CreateMembership)                       // Crear membresía
 	membershipRoutes.Get("/person/:personID", membershipHandler.GetMembershipByPersonID) // Obtener membresía por persona
 	membershipRoutes.Put("/", membershipHandler.UpdateMembership)                        // Actualizar membresía
+
+	// --- Rutas para Ministry ---
+	ministryRoutes := protected.Group("/ministry")
+	ministryRoutes.Post("/", ministryHandler.CreateMinistry)
+	ministryRoutes.Put("/", ministryHandler.UpdateMinistry)
+
+	// --- Rutas para Ministry Member ---
+	ministryMemberRoutes := ministryRoutes.Group("/member")
+	ministryMemberRoutes.Post("/", ministryHandler.CreateMinistryMember)
+	ministryMemberRoutes.Put("/", ministryHandler.UpdateMinistryMember)
 }
