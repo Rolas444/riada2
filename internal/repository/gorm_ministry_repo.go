@@ -16,6 +16,12 @@ func NewGormMinistryRepository(db *gorm.DB) ports.MinistryRepository {
 	return &GormMinistryRepository{db: db}
 }
 
+func (r *GormMinistryRepository) FindAll() ([]domain.Ministry, error) {
+	var ministries []domain.Ministry
+	err := r.db.Find(&ministries).Error
+	return ministries, err
+}
+
 func (r *GormMinistryRepository) Save(ministry *domain.Ministry) error {
 	return r.db.Create(ministry).Error
 }

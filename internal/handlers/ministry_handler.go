@@ -15,6 +15,14 @@ func NewMinistryHandler(ministryService ports.MinistryService, ministryMemberSer
 	return &MinistryHandler{ministryService: ministryService, ministryMemberService: ministryMemberService}
 }
 
+func (h *MinistryHandler) GetAll(c *fiber.Ctx) error {
+	ministries, err := h.ministryService.GetAll()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(ministries)
+}
+
 // POST /minister
 func (h *MinistryHandler) CreateMinistry(c *fiber.Ctx) error {
 	var req CreateMinistryRequest

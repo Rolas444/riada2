@@ -16,6 +16,10 @@ func NewMinistryMemberService(repo ports.MinistryMemberRepository, membershipRep
 	return &MinistryMemberServiceImpl{repo: repo, membershipRepo: membershipRepo}
 }
 
+func (s *MinistryMemberServiceImpl) GetAll() ([]domain.MinistryMember, error) {
+	return s.repo.FindAll()
+}
+
 func (s *MinistryMemberServiceImpl) Create(member *domain.MinistryMember) (*domain.MinistryMember, error) {
 	// Validate membership exists for the person
 	m, err := s.membershipRepo.FindByPersonID(member.PersonID)

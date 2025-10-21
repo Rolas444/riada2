@@ -15,6 +15,10 @@ func NewMinistryService(repo ports.MinistryRepository) ports.MinistryService {
 	return &MinistryServiceImpl{repo: repo}
 }
 
+func (s *MinistryServiceImpl) GetAll() ([]domain.Ministry, error) {
+	return s.repo.FindAll()
+}
+
 func (s *MinistryServiceImpl) Create(ministry *domain.Ministry) (*domain.Ministry, error) {
 	if ministry.Name == "" {
 		return nil, errors.New("name is required")
