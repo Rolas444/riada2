@@ -26,7 +26,7 @@ func (r *gormPersonRepository) Delete(id uint) error {
 
 func (r *gormPersonRepository) FindByID(id uint) (*domain.Person, error) {
 	var person domain.Person
-	if err := r.db.Preload("Addresses").Preload("Phones").First(&person, id).Error; err != nil {
+	if err := r.db.Preload("Addresses").Preload("Phones").Preload("Membership").First(&person, id).Error; err != nil {
 		return nil, err
 	}
 	return &person, nil
@@ -34,7 +34,7 @@ func (r *gormPersonRepository) FindByID(id uint) (*domain.Person, error) {
 
 func (r *gormPersonRepository) FindByUserID(userID uint) (*domain.Person, error) {
 	var person domain.Person
-	if err := r.db.Preload("Addresses").Preload("Phones").Where("user_id = ?", userID).First(&person).Error; err != nil {
+	if err := r.db.Preload("Addresses").Preload("Phones").Preload("Membership").Where("user_id = ?", userID).First(&person).Error; err != nil {
 		return nil, err
 	}
 	return &person, nil
@@ -42,7 +42,7 @@ func (r *gormPersonRepository) FindByUserID(userID uint) (*domain.Person, error)
 
 func (r *gormPersonRepository) Search(searchTerm string) ([]domain.Person, error) {
 	var persons []domain.Person
-	query := r.db.Preload("Addresses").Preload("Phones")
+	query := r.db.Preload("Addresses").Preload("Phones").Preload("Membership")
 
 	if searchTerm != "" {
 		likeTerm := "%" + searchTerm + "%"
