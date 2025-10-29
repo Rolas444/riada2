@@ -61,6 +61,14 @@ func (h *MinistryHandler) UpdateMinistry(c *fiber.Ctx) error {
 	return c.JSON(updated)
 }
 
+func (h *MinistryHandler) GetAllMinistryMembers(c *fiber.Ctx) error {
+	members, err := h.ministryMemberService.GetAll()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(members)
+}
+
 // POST /ministry/member
 func (h *MinistryHandler) CreateMinistryMember(c *fiber.Ctx) error {
 	var req CreateMinistryMemberRequest
