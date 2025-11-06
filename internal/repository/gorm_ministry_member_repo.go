@@ -22,6 +22,12 @@ func (r *GormMinistryMemberRepository) FindAll() ([]domain.MinistryMember, error
 	return members, err
 }
 
+func (r *GormMinistryMemberRepository) FindByMinistryID(ministryID uint) ([]domain.MinistryMember, error) {
+    var members []domain.MinistryMember
+    err := r.db.Where("ministry_id = ?", ministryID).Find(&members).Error
+    return members, err
+}
+
 func (r *GormMinistryMemberRepository) Save(member *domain.MinistryMember) error {
 	return r.db.Create(member).Error
 }

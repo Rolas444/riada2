@@ -75,6 +75,7 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, userHandler 
 	// --- Rutas para Ministry ---
 	ministryRoutes := protected.Group("/ministry")
 	ministryRoutes.Get("/", ministryHandler.GetAll)
+	ministryRoutes.Get("/:ministryID/members", ministryHandler.GetMinistryMembersByMinistryID)
 	ministryRoutes.Post("/", ministryHandler.CreateMinistry)
 	ministryRoutes.Put("/", ministryHandler.UpdateMinistry)
 
