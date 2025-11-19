@@ -1,6 +1,7 @@
 package handlers
 
 import (
+    "strconv"
 	"github.com/gofiber/fiber/v2"
 	"github.com/riada2/internal/core/domain"
 	"github.com/riada2/internal/core/ports"
@@ -67,6 +68,25 @@ func (h *MinistryHandler) GetAllMinistryMembers(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(members)
+}
+
+// GET /ministry/:ministryID/members
+func (h *MinistryHandler) GetMinistryMembersByMinistryID(c *fiber.Ctx) error {
+    ministryIDParam := c.Params("ministryID")
+    if ministryIDParam == "" {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ministryID es requerido"})
+    }
+    // Convert to uint
+    parsed, err := strconv.ParseUint(ministryIDParam, 10, 64)
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ministryID inválido"})
+    }
+    ministryID := uint(parsed)
+    members, err := h.ministryMemberService.GetByMinistryID(ministryID)
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+    }
+    return c.JSON(members)
 }
 
 // POST /ministry/member

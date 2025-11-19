@@ -18,7 +18,20 @@ func NewGormMinistryMemberRepository(db *gorm.DB) ports.MinistryMemberRepository
 
 func (r *GormMinistryMemberRepository) FindAll() ([]domain.MinistryMember, error) {
 	var members []domain.MinistryMember
-	err := r.db.Find(&members).Error
+	err := r.db.
+		Preload("Person").
+		Preload("Ministry").
+		Find(&members).Error
+	return members, err
+}
+
+func (r *GormMinistryMemberRepository) FindByMinistryID(ministryID uint) ([]domain.MinistryMember, error) {
+	var members []domain.MinistryMember
+	err := r.db.
+		Preload("Person").
+		Preload("Ministry").
+		Where("ministry_id = ?", ministryID).
+		Find(&members).Error
 	return members, err
 }
 
